@@ -54,53 +54,6 @@ const CONFIG = {
   }
 })();
 
-/* ---------- 커버 하단 꽃장식 ---------- */
-(function flowers() {
-  const el = document.querySelector(".flowers");
-  if (!el) return;
-  const colors = ["#eab8c0", "#f3d6dc", "#ffffff", "#b7a6d9", "#d9cdee", "#f6e3c9"];
-  for (let i = 0; i < 26; i++) {
-    const leaf = document.createElement("span");
-    leaf.className = "leaf";
-    leaf.style.left = `${Math.random() * 100}%`;
-    leaf.style.bottom = `${Math.random() * 60}px`;
-    leaf.style.transform = `rotate(${Math.random() * 360}deg)`;
-    el.appendChild(leaf);
-  }
-  for (let i = 0; i < 70; i++) {
-    const b = document.createElement("span");
-    b.className = "bloom";
-    const x = Math.random() * 100;
-    const edge = Math.abs(x - 50) / 50; // 양 끝일수록 높게 쌓이게
-    const size = 8 + Math.random() * 18;
-    b.style.width = b.style.height = `${size}px`;
-    b.style.left = `calc(${x}% - ${size / 2}px)`;
-    b.style.bottom = `${Math.random() * (30 + edge * 70)}px`;
-    b.style.background = colors[Math.floor(Math.random() * colors.length)];
-    b.style.opacity = (0.7 + Math.random() * 0.3).toFixed(2);
-    el.appendChild(b);
-  }
-})();
-
-/* ---------- 꽃잎 ---------- */
-(function petals() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const colors = ["#eab8c0", "#b7a6d9", "#ffffff", "#f3d6dc", "#d9cdee"];
-  let count = 0;
-  const timer = setInterval(() => {
-    if (count++ > 40) return clearInterval(timer);
-    const p = document.createElement("span");
-    p.className = "petal";
-    p.style.left = `${Math.random() * 100}vw`;
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.setProperty("--drift", `${(Math.random() - 0.5) * 160}px`);
-    p.style.animationDuration = `${6 + Math.random() * 5}s`;
-    p.style.opacity = 0.85;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 12000);
-  }, 450);
-})();
-
 /* ---------- 스크롤 등장 ---------- */
 const io = new IntersectionObserver(
   (entries) =>
@@ -145,8 +98,8 @@ function renderDday() {
   if (diff <= 0) {
     const daysAfter = Math.floor(-diff / 86400000);
     el.innerHTML = daysAfter === 0
-      ? "오늘, 저희 결혼합니다 💐"
-      : `태용 ♥ 원선, 함께한 지 <strong>${daysAfter}일</strong>`;
+      ? "오늘, 저희 결혼합니다"
+      : `태용, 원선이 함께한 지 <strong>${daysAfter}일</strong>`;
     return;
   }
   const d = Math.floor(diff / 86400000);
@@ -155,12 +108,12 @@ function renderDday() {
   const s = Math.floor((diff / 1000) % 60);
   el.innerHTML = `
     <div class="dday-boxes">
-      <div class="dday-box">${d}<small>DAYS</small></div>
-      <div class="dday-box">${h}<small>HOUR</small></div>
-      <div class="dday-box">${m}<small>MIN</small></div>
+      <div class="dday-box">${d}<small>DAYS</small></div><span class="dday-sep">:</span>
+      <div class="dday-box">${h}<small>HOUR</small></div><span class="dday-sep">:</span>
+      <div class="dday-box">${m}<small>MIN</small></div><span class="dday-sep">:</span>
       <div class="dday-box">${s}<small>SEC</small></div>
     </div>
-    태용 ♥ 원선의 결혼식이 <strong>${d + 1}일</strong> 남았습니다`;
+    태용, 원선의 결혼식이 <strong>${d + 1}일</strong> 남았습니다`;
 }
 renderDday();
 setInterval(renderDday, 1000);
