@@ -1,3 +1,9 @@
+@font-face { font-family: "Dandi"; src: url("fonts/BusanDandiMyeongjoB.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "MaruBuri"; src: url("fonts/MaruBuri-Regular.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Cormorant"; src: url("fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Cormorant"; font-style: italic; src: url("fonts/cormorant-garamond-latin-400-italic.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Pinyon"; src: url("fonts/pinyon-script-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+
 :root {
   --night: #1a1822;
   --night-2: #252231;
@@ -11,8 +17,10 @@
   --blush-soft: #f8e9ec;
   --sage: #a9bfa0;
   --gold: #d9c39a;
-  --serif-ko: "Gowun Batang", serif;
-  --serif-en: "Cormorant Garamond", serif;
+  --serif-ko: "MaruBuri", serif;
+  --title-ko: "Dandi", "MaruBuri", serif;
+  --script: "Pinyon", cursive;
+  --serif-en: "Cormorant", serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,6 +128,7 @@ body {
 }
 
 .names {
+  font-family: var(--title-ko);
   font-weight: 400;
   font-size: 30px;
   letter-spacing: 0.12em;
@@ -133,7 +142,7 @@ body {
   font-family: var(--serif-en);
   font-style: italic;
   color: var(--blush);
-  font-size: 28px;
+  font-size: 30px;
 }
 
 .cover-date {
@@ -229,6 +238,7 @@ body {
 }
 
 h2 {
+  font-family: var(--title-ko);
   font-size: 20px;
   font-weight: 400;
   margin-bottom: 28px;
@@ -236,6 +246,7 @@ h2 {
 }
 
 h2 small {
+  font-family: var(--serif-ko);
   font-size: 15px;
   color: var(--muted);
 }
@@ -278,6 +289,7 @@ h2 small {
   display: none;
   position: absolute;
   inset: 0;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: var(--muted);
@@ -300,7 +312,7 @@ h2 small {
 }
 
 .couple .parents { color: var(--muted); font-size: 14px; }
-.couple strong { font-weight: 700; margin-left: 4px; }
+.couple strong { font-family: var(--title-ko); font-weight: 400; margin-left: 4px; }
 
 /* ---------- 달력 ---------- */
 .date { background: var(--paper); }
@@ -464,7 +476,7 @@ h2 small {
   margin-bottom: 16px;
 }
 
-.venue-name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.venue-name { font-family: var(--title-ko); font-size: 17px; font-weight: 400; margin-bottom: 6px; }
 .venue-addr { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
 
 .copy-btn {
@@ -578,9 +590,8 @@ h2 small {
 /* ---------- 공유 / 푸터 ---------- */
 .thanks {
   margin-top: 48px;
-  font-family: var(--serif-en);
-  font-style: italic;
-  font-size: 26px;
+  font-family: var(--script);
+  font-size: 34px;
   color: var(--lavender);
 }
 
