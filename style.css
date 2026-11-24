@@ -206,8 +206,9 @@ body {
   border-bottom: 1px solid var(--vein);
 }
 
-.family dt { font-size: 13px; color: var(--plum-soft); }
-.family dd { font-family: var(--display); font-size: 18px; letter-spacing: 0.12em; }
+.family div { font-size: 16px; }
+.family dt { font-size: 0.8125em; color: var(--plum-soft); }
+.family dd { font-family: var(--display); font-size: 1.125em; letter-spacing: 0.12em; }
 
 /* ---------- 스타티스 ---------- */
 .statice {
@@ -243,7 +244,7 @@ body {
 .big-date {
   font-family: var(--numeral);
   font-weight: 400;
-  font-size: 148px;
+  font-size: min(148px, 36vw);
   line-height: 0.82;
   color: var(--plum-ink);
   display: flex;
@@ -256,8 +257,9 @@ body {
 
 .big-date .slash {
   width: 2px;
-  height: 120px;
-  margin: 0 14px 0 6px;
+  flex-shrink: 0;
+  height: 0.8em;
+  margin: 0 0.1em 0 0.04em;
   background: var(--statice);
   transform: rotate(22deg);
 }
@@ -414,7 +416,7 @@ body {
 
 .venue strong {
   font-weight: 400;
-  font-size: 34px;
+  font-size: 2.125em;
   color: var(--plum-ink);
   letter-spacing: 0.02em;
 }
@@ -469,7 +471,7 @@ body {
 
 .ways dt { font-family: var(--display); font-size: 13px; color: var(--statice); padding-top: 2px; }
 .ways dd { font-size: 14px; line-height: 1.8; }
-.ways small { font-size: 12px; color: var(--plum-faint); }
+.ways small { font-size: 0.857em; color: var(--plum-faint); }
 
 /* ---------- 계좌 ---------- */
 .account { background: var(--marble-2); }
@@ -626,3 +628,55 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .cover-text, .touch-hint { animation: none; opacity: 1; }
 }
+
+/* =========================================================
+   가운데 정렬 + 한 줄 맞춤
+   .fit 안의 각 줄은 줄바꿈 없이 한 줄로, 넘치면 main.js가 글자 크기를 줄여요
+   ========================================================= */
+.block, .statice, .hall-text, .end, .cover-text { text-align: center; }
+
+.fit .ln { display: block; white-space: nowrap; }
+
+.body-text { margin: 0 auto; max-width: none; }
+
+.family { justify-items: center; }
+.family div {
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.statice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.statice p { width: 100%; }
+.statice-mark { margin-top: 0; }
+
+.gallery-block h2 { text-align: center; }
+
+.addr { margin-bottom: 10px; }
+.addr-copy { margin-bottom: 32px; }
+.inline-copy { margin-left: 0; }
+
+.ways div {
+  grid-template-columns: 1fr;
+  gap: 4px;
+  justify-items: center;
+}
+.ways dd { width: 100%; }
+
+.note { margin-left: auto; margin-right: auto; }
+
+.acc-head { justify-content: center; gap: 12px; }
+
+.acc-row {
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 22px;
+}
+
+.hall p { width: 100%; }

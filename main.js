@@ -34,6 +34,33 @@ const CONFIG = {
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* =========================================================
+   한 줄 맞춤: .fit 문단은 <br> 기준으로 줄을 나누고,
+   어떤 줄이 화면보다 길면 그 문단 전체 글자 크기를 줄여서
+   한두 글자만 다음 줄로 떨어지는 일이 없게 해요.
+   ========================================================= */
+const fitEls = [...document.querySelectorAll(".fit")];
+fitEls.forEach((el) => {
+  if (el.tagName === "DIV") return; // 이름 줄은 통째로 한 줄
+  const parts = el.innerHTML.split(/<br\s*\/?>/i).map((s) => s.trim()).filter(Boolean);
+  el.innerHTML = parts.map((p) => `<span class="ln">${p}</span>`).join("");
+});
+
+function fitAll() {
+  fitEls.forEach((el) => {
+    el.style.fontSize = "";
+    const base = parseFloat(getComputedStyle(el).fontSize);
+    const avail = el.clientWidth;
+    if (!avail) return;
+    const lines = el.tagName === "DIV" ? [el] : [...el.querySelectorAll(".ln")];
+    const widest = Math.max(...lines.map((l) => l.scrollWidth));
+    if (widest > avail) el.style.fontSize = `${Math.floor(base * (avail / widest) * 0.97 * 10) / 10}px`;
+  });
+}
+fitAll();
+document.fonts && document.fonts.ready.then(fitAll);
+window.addEventListener("resize", fitAll);
+
+/* =========================================================
    샹들리에: 크리스탈 줄 사이에 10.16이 도트로 숨어 있어요.
    손가락으로 쓸면 줄이 흔들려요.
    ========================================================= */
