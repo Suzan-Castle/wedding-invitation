@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>이태용 ♥ 성원선 결혼합니다</title>
+  <meta name="description" content="2027년 10월 16일 토요일 오후 1시 20분, 신도림 웨딩시티 스타티스홀" />
+
+  <!-- 카카오톡/문자 공유 썸네일 (배포 후 og-image.jpg 넣고 주소 바꾸기) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="이태용 ♥ 성원선 결혼합니다" />
+  <meta property="og:description" content="2027.10.16 토 오후 1시 20분 · 신도림 웨딩시티 스타티스홀" />
+  <meta property="og:image" content="/images/og-image.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+
+    <!-- 1. 커버 -->
+    <section class="cover">
+      <div class="chandelier" id="chandelier" aria-hidden="true"></div>
+      <div class="cover-glow" aria-hidden="true"></div>
+      <div class="cover-text">
+        <p class="eyebrow">WE ARE GETTING MARRIED</p>
+        <h1 class="names">
+          <span>이태용</span>
+          <span class="amp">&amp;</span>
+          <span>성원선</span>
+        </h1>
+        <p class="cover-date">2027. 10. 16 SAT · 1:20 PM</p>
+        <p class="cover-place">신도림 웨딩시티 스타티스홀</p>
+      </div>
+      <div class="flowers" aria-hidden="true"></div>
+      <div class="scroll-hint" aria-hidden="true">SCROLL</div>
+    </section>
+
+    <!-- 2. 메인 사진 -->
+    <section class="section main-photo reveal">
+      <div class="photo-frame">
+        <img src="images/main.jpg" alt="이태용, 성원선 웨딩 사진" onerror="this.parentElement.classList.add('empty')" />
+        <span class="photo-placeholder">메인 사진 자리<br /><small>images/main.jpg</small></span>
+      </div>
+    </section>
+
+    <!-- 3. 인사말 -->
+    <section class="section greeting reveal">
+      <p class="label">INVITATION</p>
+      <h2>소중한 분들을 초대합니다</h2>
+      <p class="greeting-text">
+        서로 다른 하루를 살던 두 사람이<br />
+        이제 같은 하루를 살아가려 합니다.<br /><br />
+        반짝이는 샹들리에 아래<br />
+        첫 걸음을 내딛는 날,<br />
+        곁에서 함께 웃어주시면<br />
+        더없는 기쁨으로 간직하겠습니다.
+      </p>
+      <div class="couple">
+        <p><span class="parents">아버지 · 어머니</span> 의 아들 <strong>이태용</strong></p>
+        <p><span class="parents">아버지 · 어머니</span> 의 딸 <strong>성원선</strong></p>
+      </div>
+    </section>
+
+    <!-- 4. 날짜 / 달력 / D-day -->
+    <section class="section date reveal">
+      <p class="label">WEDDING DAY</p>
+      <h2>2027년 10월 16일 토요일<br /><small>오후 1시 20분</small></h2>
+      <div class="calendar" id="calendar"></div>
+      <div class="dday" id="dday"></div>
+      <button class="btn ghost" id="addCalendar" type="button">캘린더에 저장하기</button>
+    </section>
+
+    <!-- 5. 갤러리 -->
+    <section class="section gallery reveal">
+      <p class="label">GALLERY</p>
+      <h2>우리의 순간들</h2>
+      <div class="gallery-track" id="gallery"></div>
+      <p class="hint">옆으로 넘겨보세요</p>
+    </section>
+
+    <!-- 6. 오시는 길 -->
+    <section class="section location reveal">
+      <p class="label">LOCATION</p>
+      <h2>오시는 길</h2>
+      <div class="venue-card">
+        <p class="venue-name">신도림 웨딩시티 스타티스홀</p>
+        <p class="venue-addr">서울특별시 구로구 새말로 97<br />신도림테크노마트 8층</p>
+        <button class="copy-btn" type="button" data-copy="서울특별시 구로구 새말로 97 신도림테크노마트 8층">주소 복사</button>
+      </div>
+      <div class="map-buttons">
+        <a class="map-btn" id="naverMap" target="_blank" rel="noopener">네이버 지도</a>
+        <a class="map-btn" id="kakaoMap" target="_blank" rel="noopener">카카오맵</a>
+        <a class="map-btn" id="tmap">티맵</a>
+      </div>
+      <div class="transport">
+        <div>
+          <h3>지하철</h3>
+          <p>1·2호선 신도림역 하차, 신도림테크노마트 방면</p>
+        </div>
+        <div>
+          <h3>주차</h3>
+          <p>신도림테크노마트 주차장 이용<br /><small>무료 주차 시간은 확정 후 안내드릴게요</small></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 마음 전하실 곳 -->
+    <section class="section account reveal">
+      <p class="label">WITH HEART</p>
+      <h2>마음 전하실 곳</h2>
+      <p class="sub">참석이 어려우신 분들을 위해 기재했습니다</p>
+      <div class="accordion" id="accounts"></div>
+    </section>
+
+    <!-- 8. 온라인 웨딩홀 입장 -->
+    <section class="section hall-entry reveal">
+      <div class="pixel-sign">ONLINE WEDDING HALL</div>
+      <h2>픽셀 웨딩홀에 놀러오세요</h2>
+      <p class="sub">
+        나만의 도트 캐릭터를 꾸미고<br />
+        다른 하객들과 웨딩홀을 돌아다니며<br />
+        축하 인사를 나눌 수 있어요
+      </p>
+      <a class="btn primary" href="hall/">웨딩홀 입장하기</a>
+    </section>
+
+    <!-- 9. 공유 -->
+    <section class="section share reveal">
+      <button class="btn ghost" id="shareBtn" type="button">청첩장 공유하기</button>
+      <p class="thanks">Thank you</p>
+      <p class="footer-names">태용 · 원선</p>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="main.js"></script>
+</body>
+</html>
