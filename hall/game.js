@@ -192,20 +192,50 @@ class Person {
     const s = this.scale();
     const h = 96 * s;
     const w = (this.img.naturalWidth / this.img.naturalHeight) * h;
-    const hop = this.moving && !reduceMotion ? Math.abs(Math.sin(this.walkT * 11)) * 6 * s : 0;
-    const squash = this.moving && !reduceMotion ? 1 - Math.abs(Math.cos(this.walkT * 11)) * 0.04 : 1;
+    const walking = this.moving && !reduceMotion;
+    const ph = this.walkT * 9;                 // 걸음 주기
+    const step = Math.sin(ph);                  // -1 ~ 1: 왼발/오른발
+    const bob = walking ? Math.abs(Math.cos(ph)) * 1.2 * s : 0; // 발 디딜 때 살짝 내려앉음
+    const sway = walking ? step * 0.018 : 0;    // 몸이 아주 살짝 좌우로
+    const hop = 0;
     const sx = this.x - camX;
 
     // 그림자
     ctx.fillStyle = "rgba(30, 18, 34, 0.28)";
     ctx.beginPath();
-    ctx.ellipse(sx, this.y, w * 0.32 * (1 - hop / 40), 5 * s, 0, 0, Math.PI * 2);
+    ctx.ellipse(sx, this.y, w * 0.32, 5 * s, 0, 0, Math.PI * 2);
     ctx.fill();
 
+    const nw = this.img.naturalWidth, nh = this.img.naturalHeight;
+    const cut = 0.86;                           // 이 높이 아래(발과 종아리)를 다리로 봄
+    const legSrcY = nh * cut, legSrcH = nh - legSrcY;
+    const legH = h * (1 - cut);
+
     ctx.save();
-    ctx.translate(sx, this.y - hop);
+    ctx.translate(sx, this.y);
     ctx.scale(this.face, 1);
-    ctx.drawImage(this.img, -w / 2, -h * squash, w, h * squash);
+
+    if (walking) {
+      // 다리: 왼쪽 절반, 오른쪽 절반을 번갈아 들고 앞으로
+      const lift = 2.6 * s, fwd = 1.2 * s;
+      const halves = [
+        { sx0: 0, a: Math.max(0, step) },        // 뒤쪽 다리
+        { sx0: nw / 2, a: Math.max(0, -step) },  // 앞쪽 다리
+      ];
+      halves.forEach(({ sx0, a }, i) => {
+        const dx = a * fwd;
+        ctx.drawImage(this.img, sx0, legSrcY, nw / 2, legSrcH,
+          -w / 2 + (sx0 / nw) * w + dx, -legH - a * lift, w / 2, legH);
+      });
+      // 몸통 (다리 위에 겹쳐서 이음새 가리기)
+      ctx.save();
+      ctx.translate(0, -legH + 2 * s);
+      ctx.rotate(sway);
+      ctx.drawImage(this.img, 0, 0, nw, legSrcY + 2, -w / 2, -(h * cut) + bob, w, h * cut + 2 * s * 0.5);
+      ctx.restore();
+    } else {
+      ctx.drawImage(this.img, -w / 2, -h, w, h);
+    }
     ctx.restore();
 
     // 이름표
