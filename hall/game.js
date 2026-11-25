@@ -260,7 +260,11 @@ class Person {
     const isMe = this === player;
     ctx.font = "12px MaruBuri, serif";
     const tw = ctx.measureText(this.name).width + 16;
-    labelQueue.push({ kind: "name", owner: this, isMe, text: this.name, cx: sx, anchorY: this.y + 6, w: tw, h: 18 });
+    // 이름표: 캐릭터와 같은 앞뒤 순서로 그려서, 앞사람이 있으면 그 뒤로 가려져요
+    roundRect(sx - tw / 2, this.y + 6, tw, 18, 9, isMe ? "rgba(216, 189, 138, 0.95)" : "rgba(18, 13, 22, 0.72)");
+    ctx.fillStyle = isMe ? "#120d16" : "#efe6d6";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(this.name, sx, this.y + 15.5);
     if (this.bubble && now < this.bubble.until) {
       ctx.font = "12px Dandi, serif";
       const nw2 = ctx.measureText(this.name).width;
@@ -362,12 +366,49 @@ function buildBackground() {
   g.imageSmoothingQuality = "high";
   const sw = bgImg.naturalWidth, sh = bgImg.naturalHeight;
 
-  // 그림 아래로 바닥 이어 붙이기 (화면이 길쭉한 폰에서도 바닥이 넉넉하게)
-  g.drawImage(bgImg, 0, sh * 0.975, sw, sh * 0.025, 0, imgH - 2, MAP_W, H - imgH + 2);
-  const fade = g.createLinearGradient(0, imgH, 0, H);
-  fade.addColorStop(0, "rgba(255,255,255,0)"); fade.addColorStop(1, "rgba(210,198,214,0.55)");
-  g.fillStyle = fade; g.fillRect(0, imgH, MAP_W, H - imgH);
+  // 그림 아래 바닥: 늘리지 않고, 원래 바닥 색으로 대리석을 새로 그려 이어 붙여요
+  const probe = document.createElement("canvas"); probe.width = 1; probe.height = 1;
+  const pg = probe.getContext("2d");
+  pg.drawImage(bgImg, 0, sh * 0.94, sw, sh * 0.06, 0, 0, 1, 1);
+  const [pr, pgc, pb] = pg.getImageData(0, 0, 1, 1).data;
+  const base = `rgb(${pr},${pgc},${pb})`;
+  const deep = `rgb(${Math.round(pr * 0.9)},${Math.round(pgc * 0.88)},${Math.round(pb * 0.92)})`;
+  const ext = g.createLinearGradient(0, imgH, 0, H);
+  ext.addColorStop(0, base); ext.addColorStop(1, deep);
+  g.fillStyle = ext; g.fillRect(0, imgH - 2, MAP_W, H - imgH + 2);
+
+  let fseed = 7;
+  const frnd = () => (fseed = (fseed * 9301 + 49297) % 233280) / 233280;
+  // 타일 줄눈 (아래로 갈수록 간격 넓게)
+  g.strokeStyle = "rgba(150, 128, 160, 0.16)"; g.lineWidth = 1;
+  let ty = imgH + 14, step = 26;
+  while (ty < H) { g.beginPath(); g.moveTo(0, ty); g.lineTo(MAP_W, ty); g.stroke(); ty += step; step *= 1.35; }
+  // 비스듬한 줄눈 (그림 속 바닥 방향과 비슷하게)
+  for (let x = -H; x < MAP_W + H; x += imgH * 0.32) {
+    g.beginPath(); g.moveTo(x, imgH); g.lineTo(x - (H - imgH) * 0.55, H); g.stroke();
+  }
+  // 대리석 결
+  for (let i = 0; i < MAP_W / 60; i++) {
+    const x = frnd() * MAP_W, y = imgH + frnd() * (H - imgH);
+    g.strokeStyle = `rgba(160, 140, 170, ${0.08 + frnd() * 0.1})`;
+    g.lineWidth = 0.8 + frnd();
+    g.beginPath(); g.moveTo(x, y);
+    g.quadraticCurveTo(x + 20 + frnd() * 30, y + (frnd() - 0.5) * 16, x + 50 + frnd() * 60, y + (frnd() - 0.3) * 20);
+    g.stroke();
+  }
+  // 은은한 빛 반사
+  for (let i = 0; i < MAP_W / 400; i++) {
+    const x = frnd() * MAP_W, y = imgH + 20 + frnd() * (H - imgH) * 0.5;
+    const rg = g.createRadialGradient(x, y, 0, x, y, 90);
+    rg.addColorStop(0, "rgba(255, 246, 230, 0.35)"); rg.addColorStop(1, "rgba(255, 246, 230, 0)");
+    g.fillStyle = rg; g.fillRect(x - 90, y - 90, 180, 180);
+  }
   g.drawImage(bgImg, 0, 0, MAP_W, imgH);
+  // 그림 아래 가장자리를 새 바닥 색으로 부드럽게 녹이기
+  const seam = g.createLinearGradient(0, imgH - imgH * 0.07, 0, imgH + 4);
+  seam.addColorStop(0, `rgba(${pr},${pgc},${pb},0)`);
+  seam.addColorStop(1, `rgba(${pr},${pgc},${pb},1)`);
+  g.fillStyle = seam; g.fillRect(0, imgH - imgH * 0.07, MAP_W, imgH * 0.07 + 4);
 
   const U = (u) => u * MAP_W, V = (v) => v * imgH;
   g.textAlign = "center"; g.textBaseline = "middle";
