@@ -262,9 +262,12 @@ class Person {
     const tw = ctx.measureText(this.name).width + 16;
     labelQueue.push({ kind: "name", owner: this, isMe, text: this.name, cx: sx, anchorY: this.y + 6, w: tw, h: 18 });
     if (this.bubble && now < this.bubble.until) {
+      ctx.font = "12px Dandi, serif";
+      const nw2 = ctx.measureText(this.name).width;
       ctx.font = "14px MaruBuri, serif";
-      const bw = ctx.measureText(this.bubble.text).width + 24;
-      labelQueue.push({ kind: "bubble", owner: this, isMe, text: this.bubble.text, cx: sx, anchorY: top - 2, w: bw, h: 32 });
+      const tw2 = ctx.measureText(this.bubble.text).width;
+      const bw = nw2 + 8 + tw2 + 26;
+      labelQueue.push({ kind: "bubble", owner: this, isMe, name: this.name, nameW: nw2, text: this.bubble.text, cx: sx, anchorY: top - 2, w: bw, h: 32 });
     } else this.bubble = null;
   }
 }
@@ -311,23 +314,23 @@ function drawLabels() {
       ctx.fillText(L.text, L.cx, r.y + r.h / 2 + 0.5);
     } else {
       const lifted = L.anchorY - 8 - (r.y + r.h) > 6;
-      const headY = L.anchorY;
-      ctx.fillStyle = "#fcf9f3";
-      if (lifted) {
-        // 밀려 올라간 말풍선은 주인 머리까지 얇은 선으로
-        ctx.strokeStyle = "rgba(252, 249, 243, 0.75)";
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath(); ctx.moveTo(L.cx, r.y + r.h); ctx.lineTo(L.cx, headY); ctx.stroke();
-        ctx.setLineDash([]);
-      }
       roundRect(r.x, r.y, r.w, r.h, 12, L.isMe ? "#fff6dc" : "#fcf9f3");
-      ctx.beginPath();
-      ctx.moveTo(L.cx - 6, r.y + r.h); ctx.lineTo(L.cx + 6, r.y + r.h); ctx.lineTo(L.cx, r.y + r.h + 7); ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = "#2a1d2e";
+      if (!lifted) {
+        // 제자리일 때만 꼬리
+        ctx.beginPath();
+        ctx.moveTo(L.cx - 6, r.y + r.h); ctx.lineTo(L.cx + 6, r.y + r.h); ctx.lineTo(L.cx, r.y + r.h + 7); ctx.closePath();
+        ctx.fill();
+      }
+      // 이름 + 내용
+      const midY = r.y + r.h / 2 + 0.5;
+      ctx.textAlign = "left";
+      ctx.font = "12px Dandi, serif";
+      ctx.fillStyle = L.isMe ? "#a8834b" : "#8a78b8";
+      ctx.fillText(L.name, r.x + 13, midY);
       ctx.font = "14px MaruBuri, serif";
-      ctx.fillText(L.text, L.cx, r.y + r.h / 2 + 0.5);
+      ctx.fillStyle = "#2a1d2e";
+      ctx.fillText(L.text, r.x + 13 + L.nameW + 8, midY);
+      ctx.textAlign = "center";
     }
   }
   labelQueue.length = 0;
