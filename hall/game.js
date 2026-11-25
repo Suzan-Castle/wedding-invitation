@@ -13,6 +13,12 @@ const GUESTS = [
 ];
 const COUPLE = { bride: "bride-b", groom: "groom-b" };
 
+// 오른쪽을 보고 걷는 그림(2장)이 있는 캐릭터. 왼쪽으로 갈 땐 좌우로 뒤집어요
+const HAS_WALK = new Set([
+  "guest-m-mocha", "guest-f-ribbon", "guest-f-butter", "guest-m-black",
+  "guest-f-sage", "guest-f-rose", "bride-a", "groom-a",
+]);
+
 const ZONES = [
   { name: "로비", from: 0, to: 380 },
   { name: "예식홀", from: 380, to: 940 },
@@ -141,6 +147,7 @@ class Person {
   constructor({ sprite, name, x, y, npc = false, fixed = false }) {
     this.sprite = sprite;
     this.img = loadImage(sprite);
+    this.walkImgs = HAS_WALK.has(sprite) ? [loadImage(sprite + "-walk1"), loadImage(sprite + "-walk2")] : null;
     this.name = name;
     this.x = x; this.y = y;
     this.tx = x; this.ty = y;
@@ -207,33 +214,35 @@ class Person {
     ctx.fill();
 
     const nw = this.img.naturalWidth, nh = this.img.naturalHeight;
-    const cut = 0.86;                           // 이 높이 아래(발과 종아리)를 다리로 봄
-    const legSrcY = nh * cut, legSrcH = nh - legSrcY;
-    const legH = h * (1 - cut);
+    const walkReady = this.walkImgs && this.walkImgs.every((im) => im.complete && im.naturalWidth);
 
     ctx.save();
     ctx.translate(sx, this.y);
-    ctx.scale(this.face, 1);
 
-    if (walking) {
-      // 다리: 왼쪽 절반, 오른쪽 절반을 번갈아 들고 앞으로
+    if (walking && walkReady) {
+      // 가는 방향을 보고 걷기: 걸음 그림 2장을 번갈아
+      const im = this.walkImgs[Math.floor(this.walkT / 0.17) % 2];
+      const wh = h;
+      const ww = (im.naturalWidth / im.naturalHeight) * wh;
+      ctx.scale(this.face, 1);
+      ctx.drawImage(im, -ww / 2, -wh + bob * 0.6, ww, wh);
+    } else if (walking) {
+      ctx.scale(this.face, 1);
+      const cut = 0.86;
+      const legSrcY = nh * cut, legSrcH = nh - legSrcY;
+      const legH = h * (1 - cut);
       const lift = 2.6 * s, fwd = 1.2 * s;
-      const halves = [
-        { sx0: 0, a: Math.max(0, step) },        // 뒤쪽 다리
-        { sx0: nw / 2, a: Math.max(0, -step) },  // 앞쪽 다리
-      ];
-      halves.forEach(({ sx0, a }, i) => {
-        const dx = a * fwd;
+      [{ sx0: 0, a: Math.max(0, step) }, { sx0: nw / 2, a: Math.max(0, -step) }].forEach(({ sx0, a }) => {
         ctx.drawImage(this.img, sx0, legSrcY, nw / 2, legSrcH,
-          -w / 2 + (sx0 / nw) * w + dx, -legH - a * lift, w / 2, legH);
+          -w / 2 + (sx0 / nw) * w + a * fwd, -legH - a * lift, w / 2, legH);
       });
-      // 몸통 (다리 위에 겹쳐서 이음새 가리기)
       ctx.save();
       ctx.translate(0, -legH + 2 * s);
       ctx.rotate(sway);
-      ctx.drawImage(this.img, 0, 0, nw, legSrcY + 2, -w / 2, -(h * cut) + bob, w, h * cut + 2 * s * 0.5);
+      ctx.drawImage(this.img, 0, 0, nw, legSrcY + 2, -w / 2, -(h * cut) + bob, w, h * cut + 1 * s);
       ctx.restore();
     } else {
+      // 멈추면 정면
       ctx.drawImage(this.img, -w / 2, -h, w, h);
     }
     ctx.restore();
