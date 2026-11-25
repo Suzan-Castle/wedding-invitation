@@ -2,65 +2,41 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>픽셀 웨딩홀 | 태용 ♥ 원선</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      min-height: 100svh;
-      background: radial-gradient(ellipse at 50% 0%, #3a3448, #1a1822 70%);
-      color: #fff;
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      text-align: center;
-      padding: 24px;
-      image-rendering: pixelated;
-    }
-    .sign {
-      background: #d9c39a;
-      color: #1a1822;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      padding: 10px 16px;
-      box-shadow: 0 -4px 0 #d9c39a, 0 4px 0 #d9c39a, -4px 0 #d9c39a, 4px 0 #d9c39a, 0 10px 0 rgba(0,0,0,.35);
-    }
-    .bubble {
-      position: relative;
-      background: #fff;
-      color: #1a1822;
-      padding: 12px 16px;
-      font-size: 14px;
-      line-height: 1.6;
-      box-shadow: 0 -3px 0 #fff, 0 3px 0 #fff, -3px 0 #fff, 3px 0 #fff;
-    }
-    .bubble::after {
-      content: "";
-      position: absolute;
-      bottom: -12px;
-      left: 50%;
-      width: 6px;
-      height: 6px;
-      background: #fff;
-      box-shadow: -6px -6px 0 #fff, 0 -6px 0 #fff, 6px -6px 0 #fff;
-    }
-    .floor {
-      width: 240px;
-      height: 6px;
-      background: repeating-linear-gradient(90deg, #b7a6d9 0 12px, #eab8c0 12px 24px);
-    }
-    a { color: #eab8c0; font-size: 13px; }
-    .blink { animation: blink 1s steps(2) infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#120d16" />
+  <title>도트 웨딩홀 | 태용, 원선</title>
+  <link rel="preload" href="../fonts/BusanDandiMyeongjoB.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="hall.css" />
 </head>
 <body>
-  <div class="sign">ONLINE WEDDING HALL</div>
-  <div class="bubble">웨딩홀 오픈 준비 중이에요<span class="blink">_</span><br />조금만 기다려주세요!</div>
-  <div class="floor"></div>
-  <a href="../">← 청첩장으로 돌아가기</a>
+
+  <!-- 1. 캐릭터 고르기 -->
+  <section class="select" id="select">
+    <div class="select-inner">
+      <p class="select-kicker fit">태용, 원선의 도트 웨딩홀</p>
+      <h1 class="select-title fit">오늘의 나를 골라주세요</h1>
+      <div class="roster" id="roster" role="radiogroup" aria-label="캐릭터 선택"></div>
+      <label class="name-field">
+        <span class="fit">웨딩홀에서 쓸 이름</span>
+        <input id="nameInput" type="text" maxlength="8" placeholder="예: 원선친구" autocomplete="off" />
+      </label>
+      <button class="enter-btn" id="enterBtn" type="button" disabled>입장하기</button>
+      <a class="back-link" href="../">청첩장으로 돌아가기</a>
+    </div>
+  </section>
+
+  <!-- 2. 웨딩홀 -->
+  <section class="hall" id="hall" hidden>
+    <canvas id="stage"></canvas>
+    <header class="hud-top">
+      <span class="zone" id="zoneName">로비</span>
+    </header>
+    <footer class="hud-bottom">
+      <p class="tip fit" id="tip">바닥을 터치하면 걸어가요</p>
+      <button class="change-btn" id="changeBtn" type="button">캐릭터 바꾸기</button>
+    </footer>
+  </section>
+
+  <script src="game.js"></script>
 </body>
 </html>

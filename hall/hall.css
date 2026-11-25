@@ -1,0 +1,189 @@
+@font-face { font-family: "Dandi"; src: url("../fonts/BusanDandiMyeongjoB.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "MaruBuri"; src: url("../fonts/MaruBuri-Regular.woff2") format("woff2"); font-display: swap; }
+
+:root {
+  --hall: #120d16;
+  --velvet: #1c1421;
+  --plum: #2a1f30;
+  --champagne: #d8bd8a;
+  --pearl: #efe6d6;
+  --pearl-soft: rgba(239, 230, 214, 0.68);
+  --hairline: rgba(216, 189, 138, 0.25);
+  --statice: #a593d1;
+  --foil: linear-gradient(100deg, #a8834b 0%, #f6e3b4 20%, #c79e5d 38%, #fff6dc 50%, #b38c52 64%, #f1d9a0 82%, #a8834b 100%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--hall);
+  color: var(--pearl);
+  font-family: "MaruBuri", serif;
+  word-break: keep-all;
+  overscroll-behavior: none;
+}
+
+.fit .ln { display: block; white-space: nowrap; }
+
+/* ---------- 캐릭터 고르기 ---------- */
+.select {
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(216, 189, 138, 0.16), transparent 70%),
+    var(--hall);
+  display: flex;
+  justify-content: center;
+}
+
+.select-inner {
+  width: 100%;
+  max-width: 440px;
+  padding: 48px 20px 40px;
+  text-align: center;
+}
+
+.select-kicker { font-size: 13px; color: var(--champagne); margin-bottom: 8px; }
+.select-title { font-family: "Dandi", serif; font-weight: 400; font-size: 24px; margin-bottom: 28px; }
+
+.roster {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.pick {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  aspect-ratio: 3 / 4.4;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(42, 31, 48, 0.4), rgba(42, 31, 48, 0.9));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pick img { height: 86%; max-width: 100%; object-fit: contain; pointer-events: none; }
+
+.pick[aria-checked="true"] {
+  border-color: var(--champagne);
+  box-shadow: 0 0 0 1px var(--champagne), 0 0 18px rgba(216, 189, 138, 0.35);
+  transform: translateY(-3px);
+}
+
+.pick[aria-checked="true"]::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  background: var(--foil);
+  transform: rotate(45deg);
+}
+
+.name-field { display: block; margin-bottom: 20px; }
+.name-field span { display: block; font-size: 13px; color: var(--pearl-soft); margin-bottom: 8px; }
+
+.name-field input {
+  width: 100%;
+  max-width: 260px;
+  padding: 12px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--pearl);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: center;
+  outline: none;
+}
+
+.name-field input:focus { border-color: var(--champagne); }
+
+.enter-btn {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 14px 40px;
+  border: none;
+  background: var(--foil);
+  color: var(--hall);
+  font-family: "Dandi", serif;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  box-shadow: 4px 4px 0 var(--statice);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s ease;
+}
+
+.enter-btn:disabled { opacity: 0.35; cursor: default; }
+.enter-btn:not(:disabled):active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--statice); }
+
+.back-link { font-size: 12px; color: var(--pearl-soft); }
+
+/* ---------- 웨딩홀 ---------- */
+.hall {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hall[hidden] { display: none; }
+
+#stage { display: block; width: 100%; height: 100%; }
+
+.hud-top {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.zone {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(18, 13, 22, 0.65);
+  font-family: "Dandi", serif;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--champagne);
+  backdrop-filter: blur(6px);
+}
+
+.hud-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  text-align: center;
+  pointer-events: none;
+}
+
+.tip { font-size: 12px; color: var(--pearl-soft); margin-bottom: 10px; transition: opacity 0.6s ease; }
+.tip.gone { opacity: 0; }
+
+.change-btn {
+  pointer-events: auto;
+  padding: 9px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(18, 13, 22, 0.7);
+  color: var(--pearl);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
