@@ -35,7 +35,7 @@ const ARCH_X = 0.452;     // 꽃 아치 가운데
 let MAP_W = 1560;
 let imgH = 0;
 
-const BOT_NAMES = ["태용친구", "원선친구", "회사동기", "대학선배", "사촌언니", "후배"];
+const BOT_NAMES = ["태용친구", "원선친구", "회사동기", "대학선배", "사촌언니", "후배", "고등학교친구"];
 const BOT_LINES = [
   "결혼 축하해!!", "드레스 너무 예뻐", "샹들리에 미쳤다", "부케 내꺼야",
   "신부 입장 언제야?", "둘이 너무 잘 어울려", "사진 찍자!", "케이크 맛있겠다",
@@ -255,33 +255,83 @@ class Person {
     }
     ctx.restore();
 
-    // 이름표
-    const top = this.y - h - hop;
-    ctx.font = `12px MaruBuri, serif`;
-    const tw = ctx.measureText(this.name).width;
+    // 이름표와 말풍선은 모아서 마지막에 겹치지 않게 배치해요
+    const top = this.y - h;
     const isMe = this === player;
-    roundRect(sx - tw / 2 - 8, top - 22, tw + 16, 18, 9, isMe ? "rgba(216, 189, 138, 0.95)" : "rgba(18, 13, 22, 0.72)");
-    ctx.fillStyle = isMe ? "#120d16" : "#efe6d6";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(this.name, sx, top - 13);
-
-    // 말풍선
+    ctx.font = "12px MaruBuri, serif";
+    const tw = ctx.measureText(this.name).width + 16;
+    labelQueue.push({ kind: "name", owner: this, isMe, text: this.name, cx: sx, anchorY: this.y + 6, w: tw, h: 18 });
     if (this.bubble && now < this.bubble.until) {
-      ctx.font = `14px MaruBuri, serif`;
+      ctx.font = "14px MaruBuri, serif";
       const bw = ctx.measureText(this.bubble.text).width + 24;
-      const by = top - 62;
-      roundRect(sx - bw / 2, by, bw, 32, 12, "#fcf9f3");
-      ctx.beginPath();
-      ctx.moveTo(sx - 6, by + 32); ctx.lineTo(sx + 6, by + 32); ctx.lineTo(sx, by + 40); ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = "#2a1d2e";
-      ctx.fillText(this.bubble.text, sx, by + 16);
+      labelQueue.push({ kind: "bubble", owner: this, isMe, text: this.bubble.text, cx: sx, anchorY: top - 2, w: bw, h: 32 });
     } else this.bubble = null;
   }
 }
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* ---------- 이름표·말풍선 겹침 방지: 겹치면 위로 쌓기 ---------- */
+const labelQueue = [];
+function drawLabels() {
+  const placed = [];
+  const GAP = 4;
+  const overlaps = (r) => placed.find((p) =>
+    r.x < p.x + p.w + GAP && r.x + r.w + GAP > p.x && r.y < p.y + p.h + GAP && r.y + r.h + GAP > p.y);
+  // 순서: 이름표 먼저(앞사람 우선), 그다음 말풍선(내 것 먼저, 그다음 앞사람)
+  const order = labelQueue.slice().sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === "name" ? -1 : 1;
+    if (a.isMe !== b.isMe) return a.isMe ? -1 : 1;
+    return b.owner.y - a.owner.y;
+  });
+  for (const L of order) {
+    let guard = 0, hit;
+    let r;
+    if (L.kind === "name") {
+      // 이름표는 발밑, 겹치면 아래로
+      r = { x: L.cx - L.w / 2, y: L.anchorY, w: L.w, h: L.h };
+      while ((hit = overlaps(r)) && guard++ < 30) r.y = hit.y + hit.h + GAP;
+    } else {
+      // 말풍선은 머리 위, 겹치면 위로
+      r = { x: L.cx - L.w / 2, y: L.anchorY - L.h - 8, w: L.w, h: L.h };
+      while ((hit = overlaps(r)) && guard++ < 30) r.y = hit.y - r.h - GAP;
+      r.y = Math.max(r.y, 52); // 위쪽 구역 이름표와 겹치지 않게
+    }
+    L.rect = r;
+    placed.push(r);
+  }
+  // 그리기: 말풍선 꼬리/연결선 → 상자 → 글자
+  for (const L of order) {
+    const r = L.rect;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (L.kind === "name") {
+      roundRect(r.x, r.y, r.w, r.h, 9, L.isMe ? "rgba(216, 189, 138, 0.95)" : "rgba(18, 13, 22, 0.72)");
+      ctx.fillStyle = L.isMe ? "#120d16" : "#efe6d6";
+      ctx.font = "12px MaruBuri, serif";
+      ctx.fillText(L.text, L.cx, r.y + r.h / 2 + 0.5);
+    } else {
+      const lifted = L.anchorY - 8 - (r.y + r.h) > 6;
+      const headY = L.anchorY;
+      ctx.fillStyle = "#fcf9f3";
+      if (lifted) {
+        // 밀려 올라간 말풍선은 주인 머리까지 얇은 선으로
+        ctx.strokeStyle = "rgba(252, 249, 243, 0.75)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(L.cx, r.y + r.h); ctx.lineTo(L.cx, headY); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      roundRect(r.x, r.y, r.w, r.h, 12, L.isMe ? "#fff6dc" : "#fcf9f3");
+      ctx.beginPath();
+      ctx.moveTo(L.cx - 6, r.y + r.h); ctx.lineTo(L.cx + 6, r.y + r.h); ctx.lineTo(L.cx, r.y + r.h + 7); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#2a1d2e";
+      ctx.font = "14px MaruBuri, serif";
+      ctx.fillText(L.text, L.cx, r.y + r.h / 2 + 0.5);
+    }
+  }
+  labelQueue.length = 0;
+}
 
 function roundRect(x, y, w, h, r, fill) {
   ctx.fillStyle = fill;
@@ -441,6 +491,7 @@ function frame(now) {
 
   // 사람들: 안쪽부터
   [...entities].sort((a, b) => a.y - b.y).forEach((e) => e.draw(now));
+  drawLabels();
 
   requestAnimationFrame(frame);
 }
