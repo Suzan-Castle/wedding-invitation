@@ -2,40 +2,43 @@
 @font-face { font-family: "MaruBuri"; src: url("fonts/MaruBuri-Regular.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Cormorant"; src: url("fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Cormorant"; font-style: italic; src: url("fonts/cormorant-garamond-latin-400-italic.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Pinyon"; src: url("fonts/pinyon-script-latin-400-normal.woff2") format("woff2"); font-display: swap; }
 
 /*
-  팔레트: 스타티스홀
-  plum-night  #1d1524  커버, 도트 웨딩홀 배경 (홀의 어두운 천장)
-  plum-ink    #2e2438  본문 글자
-  statice     #8a78b8  스타티스 꽃 보라. 포인트로 아주 조금만
-  marble      #f1eff3  바탕 (차가운 대리석 화이트)
-  vein        #dcd6e2  대리석 결 = 구분선
-  crystal     #f3e2bd  샹들리에 빛
+  팔레트: 샹들리에가 켜진 스타티스홀의 저녁
+  hall        #120d16  홀의 어둠
+  velvet      #1c1421  한 톤 밝은 벨벳
+  plum        #2a1f30  카드, 구분 면
+  champagne   #d8bd8a  샹들리에 금빛
+  pearl       #efe6d6  본문 글자
+  statice     #a593d1  스타티스 보라 (포인트)
 */
 :root {
-  --plum-night: #1d1524;
-  --plum-ink: #2e2438;
-  --plum-soft: #6e6378;
-  --plum-faint: #a49bac;
-  --statice: #8a78b8;
-  --marble: #f1eff3;
-  --marble-2: #e8e4ec;
-  --vein: #dcd6e2;
-  --crystal: #f3e2bd;
-  --sage: #7f8f78;
+  --hall: #120d16;
+  --velvet: #1c1421;
+  --plum: #2a1f30;
+  --champagne: #d8bd8a;
+  --champagne-deep: #a8834b;
+  --pearl: #efe6d6;
+  --pearl-soft: rgba(239, 230, 214, 0.68);
+  --pearl-faint: rgba(239, 230, 214, 0.4);
+  --hairline: rgba(216, 189, 138, 0.22);
+  --statice: #a593d1;
 
   --display: "Dandi", "MaruBuri", serif;
   --text: "MaruBuri", serif;
   --numeral: "Cormorant", serif;
+  --script: "Pinyon", cursive;
 
   --gutter: 36px;
+  --foil: linear-gradient(100deg, #a8834b 0%, #f6e3b4 20%, #c79e5d 38%, #fff6dc 50%, #b38c52 64%, #f1d9a0 82%, #a8834b 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--plum-night);
-  color: var(--plum-ink);
+  background: #0b080d;
+  color: var(--pearl);
   font-family: var(--text);
   font-size: 15px;
   line-height: 1.95;
@@ -46,103 +49,115 @@ body {
 .wrap {
   max-width: 440px;
   margin: 0 auto;
-  background: var(--marble);
+  background: var(--hall);
   overflow: hidden;
+  text-align: center;
 }
 
-:focus-visible { outline: 2px solid var(--statice); outline-offset: 3px; }
+:focus-visible { outline: 1px solid var(--champagne); outline-offset: 4px; }
+
+/* 금박 글씨: 처음 한 번 빛이 쓱 지나가요 */
+.foil {
+  background: var(--foil);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- 한 줄 맞춤 (.fit) ---------- */
+.fit .ln { display: block; white-space: nowrap; }
 
 /* ---------- 커버 ---------- */
 .cover {
   position: relative;
   height: 100svh;
-  min-height: 620px;
-  max-height: 940px;
-  background: var(--plum-night);
-  color: var(--marble);
+  min-height: 640px;
+  max-height: 960px;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, #3b2a37 0%, transparent 70%),
+    linear-gradient(to bottom, #1a1219 0%, var(--hall) 70%);
   overflow: hidden;
   touch-action: pan-y;
 }
 
-.chandelier {
+.chandelier { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.cover::after {
+  content: "";
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
+  inset: 16px;
+  border: 1px solid var(--hairline);
+  pointer-events: none;
 }
 
 .cover-text {
   position: absolute;
   left: var(--gutter);
   right: var(--gutter);
-  bottom: 13%;
-  text-align: center;
+  bottom: 9%;
   opacity: 0;
-  animation: rise 1.4s cubic-bezier(.2, .7, .2, 1) 2.2s forwards;
+  animation: rise 1.6s cubic-bezier(.2, .7, .2, 1) 1.8s forwards;
 }
 
 .names {
   font-family: var(--display);
   font-weight: 400;
-  font-size: 30px;
-  letter-spacing: 0.18em;
-  line-height: 1;
+  font-size: 38px;
+  line-height: 1.25;
+  letter-spacing: 0.14em;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
-.names-line {
-  width: 5px;
-  height: 5px;
-  background: var(--crystal);
-  transform: rotate(45deg);
-  box-shadow: 0 0 8px rgba(243, 226, 189, 0.8);
+.names .foil { animation: sheen 2.6s ease 2.4s forwards; padding-left: 0.14em; }
+
+.names .amp {
+  font-family: var(--script);
+  font-size: 26px;
+  letter-spacing: 0;
+  line-height: 1.3;
+  color: var(--champagne);
+  opacity: 0.85;
 }
 
-.cover-when {
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: rgba(241, 239, 243, 0.82);
-}
+@keyframes sheen { to { background-position: 0 0; } }
 
-.cover-where {
-  font-size: 13px;
-  color: rgba(241, 239, 243, 0.5);
-}
+.cover-when { font-size: 13px; color: var(--pearl-soft); letter-spacing: 0.03em; }
+.cover-where { font-size: 12px; color: var(--pearl-faint); }
 
 .touch-hint {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 4.5%;
-  text-align: center;
+  bottom: 3.6%;
   font-size: 11px;
-  color: rgba(243, 226, 189, 0.55);
+  color: rgba(216, 189, 138, 0.55);
   opacity: 0;
-  animation: rise 1s ease 3.6s forwards;
-  transition: opacity 0.6s ease;
+  animation: rise 1s ease 3.8s forwards;
 }
 
-.touch-hint.gone { opacity: 0 !important; animation: none; }
+.touch-hint.gone { opacity: 0 !important; animation: none; transition: opacity 0.6s ease; }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
 
-/* ---------- 메인 사진 ---------- */
-.hero-photo { margin: 0; }
+/* ---------- 메인 사진: 금테 액자 ---------- */
+.hero-photo { margin: 0; padding: 0 var(--gutter) 24px; background: var(--hall); }
 
 .photo-frame {
   position: relative;
   aspect-ratio: 4 / 5;
   background:
-    linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.5) 46%, transparent 52%),
-    linear-gradient(160deg, #e4e0e9, #d6d0dd);
+    linear-gradient(115deg, transparent 40%, rgba(255, 240, 210, 0.08) 46%, transparent 52%),
+    linear-gradient(160deg, #2c2130, #1c1421);
+  outline: 1px solid var(--hairline);
+  outline-offset: 8px;
 }
 
 .photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -154,122 +169,117 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   font-size: 13px;
-  color: var(--plum-faint);
+  color: var(--pearl-faint);
 }
 
 .photo-frame.empty img { display: none; }
 .photo-frame.empty .photo-placeholder { display: flex; }
 
 /* ---------- 공통 블록 ---------- */
-.block {
-  padding: 104px var(--gutter);
-}
+.block { padding: 104px var(--gutter); }
 
 .block h2 {
   font-family: var(--display);
   font-weight: 400;
   font-size: 14px;
-  letter-spacing: 0.14em;
-  color: var(--statice);
+  letter-spacing: 0.16em;
+  color: var(--champagne);
   margin-bottom: 36px;
+}
+
+/* 제목 위 크리스탈 장식 */
+.block h2::before {
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin: 0 auto 18px;
+  background: linear-gradient(135deg, #fff6dc, #c79e5d);
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px rgba(246, 227, 180, 0.6);
 }
 
 /* ---------- 인사말 ---------- */
 .greeting .lead {
-  font-size: 30px;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
-  color: var(--plum-ink);
+  font-size: 28px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--pearl);
   margin-bottom: 40px;
 }
 
-.body-text {
-  font-size: 15px;
-  line-height: 2.15;
-  color: var(--plum-ink);
-  max-width: 30em;
-}
+.greeting .lead::before { margin-bottom: 28px; }
 
-.family {
-  margin-top: 64px;
-  display: grid;
-  gap: 10px;
-}
+.body-text { font-size: 15px; line-height: 2.2; color: var(--pearl-soft); }
+
+.family { margin-top: 60px; display: grid; gap: 12px; justify-items: center; }
 
 .family div {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--vein);
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  white-space: nowrap;
+  font-size: 16px;
 }
 
-.family div { font-size: 16px; }
-.family dt { font-size: 0.8125em; color: var(--plum-soft); }
-.family dd { font-family: var(--display); font-size: 1.125em; letter-spacing: 0.12em; }
+.family dt { font-size: 0.8125em; color: var(--pearl-faint); }
+.family dd { font-family: var(--display); font-size: 1.15em; letter-spacing: 0.12em; color: var(--pearl); }
 
 /* ---------- 스타티스 ---------- */
 .statice {
-  background: var(--plum-ink);
-  color: var(--marble);
-  padding: 72px var(--gutter);
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 22px;
-  align-items: start;
+  position: relative;
+  padding: 80px var(--gutter);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(165, 147, 209, 0.16), transparent 70%),
+    var(--velvet);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
 
-.statice-mark {
-  width: 44px;
-  height: 44px;
-  color: var(--statice);
-  margin-top: 4px;
-}
-
-.statice p {
-  font-size: 14px;
-  line-height: 2;
-  color: rgba(241, 239, 243, 0.8);
-}
+.statice-mark { width: 44px; height: 44px; color: var(--statice); filter: drop-shadow(0 0 8px rgba(165, 147, 209, 0.5)); }
+.statice p { width: 100%; font-size: 14px; line-height: 2.05; color: var(--pearl-soft); }
 
 /* ---------- 날짜 ---------- */
-.when {
-  background: var(--marble-2);
-  text-align: center;
-  padding-top: 88px;
-}
+.when { padding-top: 96px; }
 
 .big-date {
   font-family: var(--numeral);
   font-weight: 400;
-  font-size: min(148px, 36vw);
+  font-size: min(150px, 37vw);
   line-height: 0.82;
-  color: var(--plum-ink);
+  letter-spacing: -0.04em;
+  font-feature-settings: "lnum" 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  letter-spacing: -0.04em;
-  font-variant-numeric: lining-nums;
-  font-feature-settings: "lnum" 1;
+}
+
+.big-date span:not(.slash) {
+  background: var(--foil);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .big-date .slash {
-  width: 2px;
   flex-shrink: 0;
+  width: 1px;
   height: 0.8em;
   margin: 0 0.1em 0 0.04em;
   background: var(--statice);
   transform: rotate(22deg);
+  box-shadow: 0 0 8px rgba(165, 147, 209, 0.8);
 }
 
-.when-detail {
-  margin-top: 26px;
-  font-family: var(--display);
-  font-size: 16px;
-  letter-spacing: 0.2em;
-}
+.when-detail { margin-top: 26px; font-family: var(--display); font-size: 16px; letter-spacing: 0.2em; color: var(--pearl); }
 
 .week {
   list-style: none;
@@ -280,44 +290,31 @@ body {
   font-feature-settings: "lnum" 1;
   font-size: 22px;
   line-height: 1;
-  color: var(--plum-faint);
+  color: var(--pearl-faint);
 }
 
-.week li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 0 18px;
-}
-
-.week li span {
-  font-family: var(--text);
-  font-size: 11px;
-}
+.week li { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 0; }
+.week li span { font-family: var(--text); font-size: 11px; }
 
 .week .the-day {
-  color: var(--marble);
-  background: var(--plum-ink);
+  color: var(--hall);
+  background: var(--foil);
   border-radius: 999px 999px 4px 4px;
+  box-shadow: 0 0 24px rgba(216, 189, 138, 0.35);
 }
 
-.week .the-day span { color: var(--crystal); }
+.week .the-day span { color: var(--hall); }
 
-.countdown {
-  font-size: 14px;
-  color: var(--plum-soft);
-  margin-bottom: 20px;
-}
+.countdown { font-size: 14px; color: var(--pearl-soft); margin-bottom: 20px; }
 
 .countdown b {
   font-family: var(--numeral);
   font-feature-settings: "lnum" 1;
   font-weight: 400;
-  font-size: 30px;
-  color: var(--plum-ink);
-  margin: 0 2px;
-  vertical-align: -3px;
+  font-size: 32px;
+  color: var(--champagne);
+  margin: 0 3px;
+  vertical-align: -4px;
 }
 
 .text-btn {
@@ -325,15 +322,14 @@ body {
   background: none;
   font-family: var(--text);
   font-size: 13px;
-  color: var(--plum-ink);
+  color: var(--pearl);
   padding: 6px 2px;
-  border-bottom: 1px solid var(--statice);
+  border-bottom: 1px solid var(--champagne);
   cursor: pointer;
 }
 
 /* ---------- 사진 모자이크 ---------- */
 .gallery-block { padding-left: 0; padding-right: 0; }
-.gallery-block h2 { padding: 0 var(--gutter); }
 
 .mosaic {
   display: grid;
@@ -348,7 +344,7 @@ body {
   padding: 0;
   overflow: hidden;
   cursor: zoom-in;
-  background: linear-gradient(160deg, #e4e0e9, #d6d0dd);
+  background: linear-gradient(160deg, #2c2130, #1c1421);
 }
 
 .tile:nth-child(6n + 1) { grid-row: span 3; }
@@ -367,8 +363,9 @@ body {
   align-items: center;
   justify-content: center;
   font-family: var(--numeral);
+  font-feature-settings: "lnum" 1;
   font-size: 22px;
-  color: var(--plum-faint);
+  color: var(--pearl-faint);
 }
 
 .tile.empty img { display: none; }
@@ -378,7 +375,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(29, 21, 36, 0.96);
+  background: rgba(12, 8, 14, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -396,7 +393,7 @@ body {
   right: 16px;
   border: none;
   background: none;
-  color: var(--marble);
+  color: var(--pearl);
   font-family: var(--text);
   font-size: 13px;
   padding: 8px;
@@ -404,85 +401,61 @@ body {
 }
 
 /* ---------- 오시는 길 ---------- */
-.location { background: var(--marble); }
+.location { background: var(--velvet); }
 
-.venue {
-  font-family: var(--display);
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--plum-soft);
-  margin-bottom: 18px;
-}
+.venue { font-family: var(--display); font-size: 16px; line-height: 1.5; color: var(--pearl-soft); margin-bottom: 18px; }
 
 .venue strong {
+  display: inline-block;
   font-weight: 400;
-  font-size: 2.125em;
-  color: var(--plum-ink);
-  letter-spacing: 0.02em;
+  font-size: 2.2em;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  background: var(--foil);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.addr {
-  font-size: 14px;
-  color: var(--plum-soft);
-  margin-bottom: 32px;
-}
+.addr { font-size: 14px; color: var(--pearl-soft); margin-bottom: 12px; }
+.addr-copy { margin-bottom: 36px; }
 
 .inline-copy {
-  display: inline-block;
-  margin-left: 8px;
-  border: none;
-  background: var(--marble-2);
-  border-radius: 4px;
-  padding: 2px 8px;
+  border: 1px solid var(--hairline);
+  background: none;
+  border-radius: 999px;
+  padding: 3px 12px;
   font-family: var(--text);
   font-size: 11px;
-  color: var(--plum-ink);
+  color: var(--champagne);
   cursor: pointer;
-  vertical-align: 1px;
 }
 
-.maps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-bottom: 48px;
-}
+.maps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 44px; }
 
 .maps a {
-  text-align: center;
   padding: 14px 0;
-  background: var(--plum-ink);
-  color: var(--marble);
+  border: 1px solid var(--hairline);
+  color: var(--pearl);
   text-decoration: none;
   font-size: 13px;
-  border-radius: 4px;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.maps a:active { background: var(--statice); }
+.maps a:active { background: var(--champagne); color: var(--hall); }
 
-.ways div {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
-  padding: 16px 0;
-  border-top: 1px solid var(--vein);
-}
-
-.ways dt { font-family: var(--display); font-size: 13px; color: var(--statice); padding-top: 2px; }
-.ways dd { font-size: 14px; line-height: 1.8; }
-.ways small { font-size: 0.857em; color: var(--plum-faint); }
+.ways div { display: grid; gap: 4px; justify-items: center; padding: 18px 0; border-top: 1px solid var(--hairline); }
+.ways dt { font-family: var(--display); font-size: 13px; color: var(--champagne); }
+.ways dd { width: 100%; font-size: 14px; line-height: 1.8; color: var(--pearl); }
+.ways small { font-size: 0.857em; color: var(--pearl-faint); }
 
 /* ---------- 계좌 ---------- */
-.account { background: var(--marble-2); }
+.note { font-size: 13px; color: var(--pearl-soft); margin: -22px auto 28px; }
 
-.note { font-size: 13px; color: var(--plum-soft); margin: -24px 0 28px; }
-
-.acc {
-  border-top: 1px solid var(--vein);
-}
-
-.acc:last-child { border-bottom: 1px solid var(--vein); }
+.acc { border-top: 1px solid var(--hairline); }
+.acc:last-child { border-bottom: 1px solid var(--hairline); }
 
 .acc-head {
   width: 100%;
@@ -490,97 +463,66 @@ body {
   background: none;
   padding: 20px 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 12px;
   font-family: var(--display);
   font-size: 16px;
-  letter-spacing: 0.08em;
-  color: var(--plum-ink);
+  letter-spacing: 0.1em;
+  color: var(--pearl);
   cursor: pointer;
 }
 
 .acc-head i {
-  width: 10px;
-  height: 10px;
-  border-right: 1px solid var(--plum-soft);
-  border-bottom: 1px solid var(--plum-soft);
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid var(--champagne);
+  border-bottom: 1px solid var(--champagne);
   transform: rotate(45deg) translateY(-3px);
   transition: transform 0.3s ease;
 }
 
 .acc.open .acc-head i { transform: rotate(225deg) translateY(-3px); }
 
-.acc-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s ease;
-}
-
+.acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s ease; }
 .acc.open .acc-body { grid-template-rows: 1fr; }
 .acc-inner { overflow: hidden; }
 
-.acc-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 0 18px;
-  font-size: 14px;
-}
-
-.acc-row small { display: block; font-size: 12px; color: var(--plum-faint); line-height: 1.6; }
+.acc-row { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 0 22px; font-size: 14px; }
+.acc-row small { display: block; font-size: 12px; color: var(--pearl-faint); line-height: 1.6; }
 
 .acc-row button {
-  border: 1px solid var(--vein);
-  background: var(--marble);
-  border-radius: 4px;
-  padding: 4px 12px;
+  border: 1px solid var(--hairline);
+  background: none;
+  border-radius: 999px;
+  padding: 3px 14px;
   font-family: var(--text);
   font-size: 12px;
-  color: var(--plum-ink);
+  color: var(--champagne);
   cursor: pointer;
 }
 
 /* ---------- 도트 웨딩홀 ---------- */
 .hall {
   position: relative;
-  background: var(--plum-night);
-  color: var(--marble);
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(165, 147, 209, 0.18), transparent 70%), var(--velvet);
   min-height: 520px;
   overflow: hidden;
+  border-top: 1px solid var(--hairline);
 }
 
-.hall-dots {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
+.hall-dots { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-.hall-text {
-  position: relative;
-  padding: 96px var(--gutter) 88px;
-}
+.hall-text { position: relative; padding: 96px var(--gutter) 88px; }
 
-.hall h2 {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 30px;
-  letter-spacing: 0.02em;
-  margin-bottom: 18px;
-}
-
-.hall p {
-  font-size: 14px;
-  color: rgba(241, 239, 243, 0.72);
-  margin-bottom: 36px;
-}
+.hall h2 { font-family: var(--display); font-weight: 400; font-size: 30px; letter-spacing: 0.04em; margin-bottom: 18px; color: var(--pearl); }
+.hall p { width: 100%; font-size: 14px; color: var(--pearl-soft); margin-bottom: 36px; }
 
 .hall-btn {
   display: inline-block;
   padding: 14px 26px;
-  background: var(--crystal);
-  color: var(--plum-night);
+  background: var(--foil);
+  color: var(--hall);
   text-decoration: none;
   font-family: var(--display);
   font-size: 15px;
@@ -592,19 +534,9 @@ body {
 .hall-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--statice); }
 
 /* ---------- 마무리 ---------- */
-.end {
-  padding: 72px var(--gutter) 80px;
-  text-align: center;
-  background: var(--marble);
-}
+.end { padding: 72px var(--gutter) 84px; }
 
-.sign {
-  margin-top: 48px;
-  font-family: var(--display);
-  font-size: 14px;
-  letter-spacing: 0.2em;
-  color: var(--plum-soft);
-}
+.sign { margin-top: 48px; font-family: var(--display); font-size: 14px; letter-spacing: 0.2em; color: var(--pearl-soft); }
 
 /* ---------- 토스트 ---------- */
 .toast {
@@ -612,10 +544,10 @@ body {
   left: 50%;
   bottom: 36px;
   transform: translate(-50%, 16px);
-  background: var(--plum-ink);
-  color: var(--marble);
+  background: var(--champagne);
+  color: var(--hall);
   padding: 10px 18px;
-  border-radius: 4px;
+  border-radius: 999px;
   font-size: 13px;
   opacity: 0;
   pointer-events: none;
@@ -627,56 +559,5 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .cover-text, .touch-hint { animation: none; opacity: 1; }
+  .names .foil { animation: none; background-position: 50% 0; }
 }
-
-/* =========================================================
-   가운데 정렬 + 한 줄 맞춤
-   .fit 안의 각 줄은 줄바꿈 없이 한 줄로, 넘치면 main.js가 글자 크기를 줄여요
-   ========================================================= */
-.block, .statice, .hall-text, .end, .cover-text { text-align: center; }
-
-.fit .ln { display: block; white-space: nowrap; }
-
-.body-text { margin: 0 auto; max-width: none; }
-
-.family { justify-items: center; }
-.family div {
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  white-space: nowrap;
-}
-
-.statice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-.statice p { width: 100%; }
-.statice-mark { margin-top: 0; }
-
-.gallery-block h2 { text-align: center; }
-
-.addr { margin-bottom: 10px; }
-.addr-copy { margin-bottom: 32px; }
-.inline-copy { margin-left: 0; }
-
-.ways div {
-  grid-template-columns: 1fr;
-  gap: 4px;
-  justify-items: center;
-}
-.ways dd { width: 100%; }
-
-.note { margin-left: auto; margin-right: auto; }
-
-.acc-head { justify-content: center; gap: 12px; }
-
-.acc-row {
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 22px;
-}
-
-.hall p { width: 100%; }

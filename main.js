@@ -61,8 +61,9 @@ document.fonts && document.fonts.ready.then(fitAll);
 window.addEventListener("resize", fitAll);
 
 /* =========================================================
-   샹들리에: 크리스탈 줄 사이에 10.16이 도트로 숨어 있어요.
-   손가락으로 쓸면 줄이 흔들려요.
+   3D 샹들리에
+   여러 층의 원형 링에 크리스탈 줄이 달려 천천히 돌아요.
+   옆으로 쓸면 관성 있게 돌고, 빛 방향에 맞은 크리스탈이 반짝여요.
    ========================================================= */
 (function chandelier() {
   const canvas = document.getElementById("chandelier");
@@ -70,156 +71,209 @@ window.addEventListener("resize", fitAll);
   const hint = document.getElementById("touchHint");
   const ctx = canvas.getContext("2d");
 
-  // 5x7 도트 글꼴
-  const GLYPHS = {
-    "1": [".#.", "##.", ".#.", ".#.", ".#.", ".#.", "###"],
-    "0": [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
-    "6": ["..##.", ".#...", "#....", "####.", "#...#", "#...#", ".###."],
-    ".": [".", ".", ".", ".", ".", ".", "#"],
-  };
+  // 미리 그려두는 빛 스프라이트
+  function sprite(size, stops) {
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    const g = c.getContext("2d");
+    const grd = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    stops.forEach(([o, col]) => grd.addColorStop(o, col));
+    g.fillStyle = grd;
+    g.fillRect(0, 0, size, size);
+    return c;
+  }
+  const BEAD = sprite(32, [[0, "rgba(255,255,255,1)"], [0.18, "rgba(255,246,224,0.95)"], [0.4, "rgba(240,214,160,0.35)"], [1, "rgba(240,214,160,0)"]]);
+  const HALO = sprite(64, [[0, "rgba(255,236,196,0.55)"], [0.35, "rgba(255,220,170,0.14)"], [1, "rgba(255,220,170,0)"]]);
+  const LILAC = sprite(32, [[0, "rgba(255,255,255,1)"], [0.2, "rgba(226,214,255,0.9)"], [0.45, "rgba(170,150,220,0.3)"], [1, "rgba(170,150,220,0)"]]);
 
-  let W, H, dpr, cols, gap, strands, textCells;
+  // 물방울 모양 크리스탈
+  const DROP = (() => {
+    const c = document.createElement("canvas");
+    c.width = 24; c.height = 48;
+    const g = c.getContext("2d");
+    const grd = g.createLinearGradient(2, 8, 22, 44);
+    grd.addColorStop(0, "#fff7e6"); grd.addColorStop(0.35, "#e9cf98");
+    grd.addColorStop(0.5, "#ffffff"); grd.addColorStop(0.7, "#c9a466"); grd.addColorStop(1, "#fff1d0");
+    g.fillStyle = grd;
+    g.beginPath();
+    g.moveTo(12, 2); g.lineTo(21, 22); g.lineTo(12, 46); g.lineTo(3, 22); g.closePath();
+    g.fill();
+    g.strokeStyle = "rgba(255,255,255,0.8)"; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(12, 2); g.lineTo(12, 46); g.moveTo(3, 22); g.lineTo(21, 22); g.stroke();
+    return c;
+  })();
+
+  let W, H, dpr, cx, topY, scale, items = [], dust = [];
+  let rot = 0, spin = 0.12, sway = 0, swayVel = 0;
   const t0 = performance.now();
 
-  function layout() {
+  function build() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = cover.clientWidth;
-    H = cover.clientHeight;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
+    W = cover.clientWidth; H = cover.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = W / 2;
+    topY = H * 0.06;
+    scale = Math.min(W / 390, H / 740) * 1.04;
+    items = [];
 
-    gap = W < 380 ? 8 : 9;
-    cols = Math.floor(W / gap) + 2;
-    const offsetX = (W - (cols - 1) * gap) / 2;
-    const maxRows = Math.floor((H * 0.56) / gap);
-
-    // 10.16 위치 (글자 사이 1칸)
-    const word = "10.16";
-    const wordCols = [...word].reduce((n, ch) => n + GLYPHS[ch][0].length, 0) + word.length - 1;
-    const startCol = Math.floor((cols - wordCols) / 2);
-    const startRow = Math.floor(maxRows * 0.42);
-    textCells = new Set();
-    let c = startCol;
-    for (const ch of word) {
-      const g = GLYPHS[ch];
-      g.forEach((row, r) => [...row].forEach((px, i) => {
-        if (px === "#") textCells.add(`${c + i},${startRow + r}`);
-      }));
-      c += g[0].length + 1;
-    }
-
-    strands = [];
-    for (let i = 0; i < cols; i++) {
-      const t = i / (cols - 1);
-      // 둥근 돔 모양 샹들리에: 반원 실루엣 + 층층이 늘어진 크리스탈
-      const u = 2 * t - 1;
-      const dome = Math.sqrt(Math.max(0, 1 - u * u));
-      const tier = (i % 3 === 0 ? 2 : i % 3 === 1 ? 0 : -1.5);
-      const scallop = Math.abs(Math.sin(t * Math.PI * 7)) * 2.2;
-      const len = Math.max(3, Math.round(maxRows * (0.34 + 0.6 * dome) + tier + scallop));
-      const dots = [];
-      for (let r = 0; r < len; r++) {
-        dots.push({
-          r,
-          lit: textCells.has(`${i},${r}`),
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.6 + Math.random() * 1.2,
-        });
+    const Rmax = 150 * scale;
+    const tiers = 6;
+    for (let k = 0; k < tiers; k++) {
+      const f = (k + 1) / (tiers + 1);
+      const r = Rmax * (0.28 + 0.72 * Math.sin(Math.PI * f * 0.92));
+      const y = topY + (22 + k * 44) * scale;
+      const n = Math.round(9 + r / (10 * scale));
+      const strandLen = Math.round(5 + (tiers - Math.abs(k - 3.2)) * 1.6);
+      for (let i = 0; i < n; i++) {
+        const th = (i / n) * Math.PI * 2 + k * 0.21;
+        // 줄
+        for (let b = 0; b < strandLen; b++) {
+          items.push({ th, r, y: y + b * 8.6 * scale, depth: b / strandLen, kind: "bead" });
+        }
+        items.push({ th, r, y: y + strandLen * 8.6 * scale + 4 * scale, depth: 1, kind: "drop", tier: k, seed: Math.random() * 100 });
+        // 링 사이 늘어진 구슬 장식
+        const th2 = ((i + 1) / n) * Math.PI * 2 + k * 0.21;
+        for (let s = 1; s < 5; s++) {
+          const u = s / 5;
+          items.push({ th: th + (th2 - th) * u, r, y: y + Math.sin(Math.PI * u) * 12 * scale, depth: 0, kind: "swag" });
+        }
       }
-      const centerDist = Math.abs(t - 0.5) * 2;
-      strands.push({ x: offsetX + i * gap, dots, sway: 0, vel: 0, delay: centerDist * 900 });
     }
+    // 가운데 기둥에서 떨어지는 긴 줄
+    for (let b = 0; b < 34; b++) items.push({ th: 0, r: 0, y: topY + b * 8 * scale, depth: b / 34, kind: "core" });
+    items.push({ th: 0, r: 0, y: topY + 34 * 8 * scale + 6, depth: 1, kind: "drop", tier: 9 });
+
+    dust = Array.from({ length: 46 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      v: 4 + Math.random() * 10, s: 0.6 + Math.random() * 1.6, p: Math.random() * 6.28,
+    }));
   }
 
-  // 터치로 흔들기
-  let lastX = null;
-  function push(clientX, strength) {
-    const rect = canvas.getBoundingClientRect();
-    const x = clientX - rect.left;
-    for (const s of strands) {
-      const d = (s.x - x) / 46;
-      s.vel += strength * Math.exp(-d * d);
-    }
-  }
-
+  // 터치로 돌리기
+  let lastX = null, lastT = 0;
   cover.addEventListener("pointerdown", (e) => {
-    lastX = e.clientX;
-    push(e.clientX, 2.2);
+    lastX = e.clientX; lastT = performance.now();
+    swayVel += 0.6;
     hint.classList.add("gone");
   });
   cover.addEventListener("pointermove", (e) => {
-    if (lastX === null && e.pointerType !== "mouse") return;
-    const dx = lastX === null ? 0 : e.clientX - lastX;
-    lastX = e.clientX;
-    if (Math.abs(dx) > 0.5) push(e.clientX, Math.max(-3, Math.min(3, dx * 0.12)));
+    if (lastX === null) return;
+    const now = performance.now();
+    const dx = e.clientX - lastX;
+    const dt = Math.max(16, now - lastT);
+    rot += dx * 0.006;
+    spin = (dx / dt) * 6;
+    swayVel += dx * 0.02;
+    lastX = e.clientX; lastT = now;
   });
   ["pointerup", "pointercancel", "pointerleave"].forEach((ev) =>
     cover.addEventListener(ev, () => { lastX = null; })
   );
 
-  function draw(now) {
+  const LIGHT = -0.6; // 빛이 오는 방향
+  let prev = performance.now();
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000);
+    prev = now;
     const elapsed = now - t0;
+
+    if (lastX === null) {
+      spin += (0.12 - spin) * 0.02; // 천천히 기본 속도로
+      rot += spin * dt;
+    }
+    swayVel += -sway * 0.06; swayVel *= 0.93; sway += swayVel * dt * 10;
+
     ctx.clearRect(0, 0, W, H);
 
     // 천장 빛
-    const glow = ctx.createRadialGradient(W / 2, H * 0.18, 10, W / 2, H * 0.18, W * 0.75);
-    glow.addColorStop(0, "rgba(243, 226, 189, 0.13)");
-    glow.addColorStop(1, "rgba(243, 226, 189, 0)");
+    const intro = reduceMotion ? 1 : Math.min(1, elapsed / 1800);
+    const glow = ctx.createRadialGradient(cx, topY + 150 * scale, 0, cx, topY + 150 * scale, W * 0.9);
+    glow.addColorStop(0, `rgba(255, 226, 176, ${0.26 * intro})`);
+    glow.addColorStop(0.45, `rgba(170, 130, 120, ${0.07 * intro})`);
+    glow.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, W, H);
 
-    const textOn = Math.min(1, Math.max(0, (elapsed - 1500) / 1200));
+    // 금가루
+    for (const d of dust) {
+      d.y -= d.v * dt; d.x += Math.sin(now / 1500 + d.p) * 0.15;
+      if (d.y < -4) { d.y = H + 4; d.x = Math.random() * W; }
+      const a = (0.25 + 0.35 * Math.sin(now / 700 + d.p)) * intro;
+      ctx.globalAlpha = Math.max(0, a);
+      ctx.drawImage(BEAD, d.x - d.s * 2, d.y - d.s * 2, d.s * 4, d.s * 4);
+    }
 
-    for (const s of strands) {
-      // 스프링
-      s.vel += -s.sway * 0.045;
-      s.vel *= 0.94;
-      s.sway += s.vel;
+    // 투영 후 뒤에서 앞으로
+    const proj = items.map((it) => {
+      const a = it.th + rot;
+      const z = Math.cos(a);
+      const persp = 1 + z * 0.18;
+      const swayX = sway * 6 * it.depth * scale;
+      return {
+        it, z, a,
+        x: cx + Math.sin(a) * it.r * persp + swayX,
+        y: it.y + z * it.r * 0.12,
+        p: persp,
+      };
+    });
+    proj.sort((m, n) => m.z - n.z);
 
-      const appear = reduceMotion ? 1 : Math.min(1, Math.max(0, (elapsed - s.delay) / 700));
-      if (appear <= 0) continue;
-      const len = s.dots.length;
-      const shown = Math.ceil(len * appear);
+    // 등장: 위에서부터 차례로 켜짐
+    const reveal = reduceMotion ? 1e9 : (elapsed / 1600) * H;
 
-      // 줄
-      ctx.strokeStyle = "rgba(241, 239, 243, 0.08)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(s.x, 0);
-      ctx.lineTo(s.x + s.sway, (shown - 1) * gap + 4);
-      ctx.stroke();
+    for (const q of proj) {
+      if (q.y - topY > reveal) continue;
+      const { it } = q;
+      const front = (q.z + 1) / 2; // 0 뒤 ~ 1 앞
+      const bright = 0.08 + 0.92 * Math.pow(front, 1.6);
+      const tw = 0.75 + 0.25 * Math.sin(now / 420 + it.th * 7 + it.y);
 
-      for (let k = 0; k < shown; k++) {
-        const d = s.dots[k];
-        const depth = d.r / Math.max(1, len - 1);
-        const x = s.x + s.sway * depth;
-        const y = d.r * gap + 4;
-        const tw = reduceMotion ? 0.7 : 0.5 + 0.5 * Math.sin(now / 1000 * d.speed + d.phase);
-
-        if (d.lit && textOn > 0) {
-          const a = textOn * (0.85 + 0.15 * tw);
-          ctx.fillStyle = `rgba(243, 226, 189, ${0.18 * a})`;
-          ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = `rgba(255, 244, 220, ${a})`;
-          ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2); ctx.fill();
-        } else {
-          const a = (0.22 + 0.5 * tw) * (d.lit ? 1 - textOn * 0.4 : 1);
-          ctx.fillStyle = `rgba(241, 239, 243, ${a})`;
-          ctx.beginPath(); ctx.arc(x, y, 1.25 + tw * 0.35, 0, Math.PI * 2); ctx.fill();
+      if (it.kind === "drop") {
+        const w = 6.5 * scale * q.p, h = 13 * scale * q.p;
+        ctx.globalAlpha = bright;
+        ctx.drawImage(DROP, q.x - w / 2, q.y - 2, w, h);
+        // 빛 방향과 맞으면 반짝
+        const twinkle = Math.pow(Math.max(0, Math.sin(now / 900 + it.seed)), 30);
+        const spec = Math.min(1, (Math.pow(Math.max(0, Math.cos(q.a - LIGHT)), 30) + twinkle * 0.8) * front);
+        if (spec > 0.05) {
+          const s = 26 * scale * spec + 8 * scale * spec;
+          ctx.globalAlpha = spec;
+          ctx.drawImage(HALO, q.x - s, q.y + h * 0.4 - s, s * 2, s * 2);
+          star(q.x, q.y + h * 0.4, 14 * scale * spec, spec);
         }
+      } else {
+        const base = it.kind === "swag" ? 1.5 : it.kind === "core" ? 2.4 : 1.8;
+        const s = base * scale * q.p * (0.85 + 0.3 * tw);
+        ctx.globalAlpha = bright * (it.kind === "swag" ? 0.7 : 0.95);
+        const spr = it.kind === "swag" && Math.round(it.th * 10) % 5 === 0 ? LILAC : BEAD;
+        ctx.drawImage(spr, q.x - s * 2, q.y - s * 2, s * 4, s * 4);
       }
     }
-    if (!reduceMotion || elapsed < 100) requestAnimationFrame(draw);
+    ctx.globalAlpha = 1;
+
+    if (!reduceMotion) requestAnimationFrame(frame);
   }
 
-  layout();
-  window.addEventListener("resize", layout);
-  requestAnimationFrame(draw);
-  if (reduceMotion) {
-    // 움직임 줄이기 설정이면 한 번만 그리고, 터치할 때만 다시 그림
-    cover.addEventListener("pointermove", () => requestAnimationFrame(draw));
+  function star(x, y, r, a) {
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = "#fffaf0";
+    ctx.beginPath();
+    ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r * 0.12, y);
+    ctx.quadraticCurveTo(x, y, x, y + r); ctx.quadraticCurveTo(x, y, x - r * 0.12, y);
+    ctx.quadraticCurveTo(x, y, x, y - r);
+    ctx.moveTo(x - r * 0.7, y); ctx.quadraticCurveTo(x, y, x, y - r * 0.1);
+    ctx.quadraticCurveTo(x, y, x + r * 0.7, y); ctx.quadraticCurveTo(x, y, x, y + r * 0.1);
+    ctx.quadraticCurveTo(x, y, x - r * 0.7, y);
+    ctx.fill();
+    ctx.restore();
   }
+
+  build();
+  window.addEventListener("resize", build);
+  requestAnimationFrame(frame);
 })();
 
 /* ---------- 날짜 / 남은 날 ---------- */
@@ -334,7 +388,7 @@ setInterval(renderCountdown, 60000);
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const px = 8;
-    const colors = ["#8a78b8", "#b3a4d8", "#f1eff3", "#d9b8c4", "#6f5f9c"];
+    const colors = ["#8a78b8", "#b3a4d8", "#efe3c8", "#d8bd8a", "#6f5f9c", "#c9a466"];
     let seed = 7;
     const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     const rows = Math.ceil(H * 0.26 / px);
@@ -354,7 +408,7 @@ setInterval(renderCountdown, 60000);
     }
     // 버진로드
     ctx.globalAlpha = 0.08;
-    ctx.fillStyle = "#f1eff3";
+    ctx.fillStyle = "#d8bd8a";
     ctx.beginPath();
     ctx.moveTo(W / 2 - 28, H - rows * px);
     ctx.lineTo(W / 2 + 28, H - rows * px);
