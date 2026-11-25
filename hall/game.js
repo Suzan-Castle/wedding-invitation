@@ -17,6 +17,8 @@ const COUPLE = { bride: "bride-b", groom: "groom-b" };
 const HAS_WALK = new Set([
   "guest-m-mocha", "guest-f-ribbon", "guest-f-butter", "guest-m-black",
   "guest-f-sage", "guest-f-rose", "bride-a", "groom-a",
+  "guest-m-navy", "guest-f-tweed", "guest-f-coral", "guest-m-coat",
+  "guest-f-sky", "guest-f-lilac", "bride-b", "groom-b",
 ]);
 
 const ZONES = [
